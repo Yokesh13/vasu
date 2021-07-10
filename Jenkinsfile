@@ -15,9 +15,9 @@ pipeline {
             }
             steps {
                 script {
-                    app = docker.build("dockerpandian/reddy")
+                    app = docker.build("dockerpandian/reddy") #Name for container which created as docker file in git repository
                     app.inside {
-                        sh 'echo $(curl localhost:8080)'
+                        sh 'echo $(curl localhost:8080)'     #host address for that container
                     }
                 }
             }
@@ -27,10 +27,10 @@ pipeline {
                 branch 'master'
             }
             steps {
-                script {
+                script {  #pushing to hub with credentials given in jenkins
                     docker.withRegistry('https://registry.hub.docker.com', 'Docker') {
                         app.push("${env.BUILD_NUMBER}")
-                        app.push("latest")
+                        app.push("latest")  #tag for container for push to hub
                     }
                 }
             }
@@ -43,10 +43,10 @@ pipeline {
                 input 'Deploy to Production?'
                 milestone(1)
                 withCredentials([usernamePassword(credentialsId: 'webserver', usernameVariable: 'USERNAME', passwordVariable: 'USERPASS')]) {
-                    script {
+                    script { #credentials ID is nothing but user which is added in deployment server and given in jenkins as id
                         sh "sshpass -p '$USERPASS' -v ssh -o StrictHostKeyChecking=no $USERNAME@$prod_ip \"docker pull dockerpandian/hippo1:${env.BUILD_NUMBER}\""
-                        try {
-                            sh "sshpass -p '$USERPASS' -v ssh -o StrictHostKeyChecking=no $USERNAME@$prod_ip \"docker stop Hippo\""
+                        try { #here docker pull name should be same as build name given in contianer
+                            sh "sshpass -p '$USERPASS' -v ssh -o StrictHostKeyChecking=no $USERNAME@$prod_ip \"docker stop Hippo\"" 
                             sh "sshpass -p '$USERPASS' -v ssh -o StrictHostKeyChecking=no $USERNAME@$prod_ip \"docker rm Hippo\""
                         } catch (err) {
                             echo: 'caught error: $err'
