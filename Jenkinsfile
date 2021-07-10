@@ -15,9 +15,9 @@ pipeline {
             }
             steps {
                 script {
-                    app = docker.build("dockerpandian/reddy") #Name_for_container_which_created_as_docker_file_in_git_repository
+                    app = docker.build("dockerpandian/reddy") 
                     app.inside {
-                        sh 'echo $(curl localhost:8080)'     #host_address_for_that_container
+                        sh 'echo $(curl localhost:8080)' 
                     }
                 }
             }
@@ -27,10 +27,10 @@ pipeline {
                 branch 'master'
             }
             steps {
-                script {  #pushing_to_hub_with_credentials_given_in_jenkins
+                script { 
                     docker.withRegistry('https://registry.hub.docker.com', 'Docker') {
                         app.push("${env.BUILD_NUMBER}")
-                        app.push("latest")  #tag_for_container_for_push_to_hub
+                        app.push("latest") 
                     }
                 }
             }
@@ -43,9 +43,9 @@ pipeline {
                 input 'Deploy to Production?'
                 milestone(1)
                 withCredentials([usernamePassword(credentialsId: 'webserver', usernameVariable: 'USERNAME', passwordVariable: 'USERPASS')]) {
-                    script { #credentials_ID_is_nothing_but_user_which_is_added_in_deployment_server_and_given_in_jenkins_as_id
+                    script { 
                         sh "sshpass -p '$USERPASS' -v ssh -o StrictHostKeyChecking=no $USERNAME@$prod_ip \"docker pull dockerpandian/hippo1:${env.BUILD_NUMBER}\""
-                        try { #here_docker_pull_name_should_be_same_as_build_name_given_in_contianer
+                        try { 
                             sh "sshpass -p '$USERPASS' -v ssh -o StrictHostKeyChecking=no $USERNAME@$prod_ip \"docker stop Hippo\"" 
                             sh "sshpass -p '$USERPASS' -v ssh -o StrictHostKeyChecking=no $USERNAME@$prod_ip \"docker rm Hippo\""
                         } catch (err) {
